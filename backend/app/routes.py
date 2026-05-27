@@ -31,7 +31,12 @@ def log_day():
 
     return jsonify({"status": "ok"})
 
+
+
 @main.route("/api/weigh-in", methods = ["POST"])
 def weigh_in():
     data = request.get_json()
+
+
+
             
