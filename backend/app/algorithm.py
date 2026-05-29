@@ -57,7 +57,7 @@ def adjust_rmr(current_rmr, start_weight, end_weight, daily_logs):
     )
     expected_weight_change = total_calorie_gap / CALS_PER_POUND
     actual_weight_change = end_weight - start_weight
-    weight_gap = actual_weight_change - expected_weight_change
+    weight_gap = expected_weight_change - actual_weight_change
     
     gap_in_calories = weight_gap * CALS_PER_POUND
     rmr_adjustment = gap_in_calories * LEARNING_RATE

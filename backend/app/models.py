@@ -14,7 +14,7 @@ class User(db.Model):
     sex = db.Column(db.String)
     activity_level = db.Column(db.String)
     weight_loss_pace = db.Column(db.String)
-    deficit = db.Column(db.float)
+    deficit = db.Column(db.Float)
     rmr = db.Column(db.Float)
     daily_target = db.Column(db.Float)
 

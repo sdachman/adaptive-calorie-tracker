@@ -72,11 +72,13 @@ def weigh_in():
     db.session.add(Weigh_in)
     db.session.commit()
 
-
-    logs = DailyLog.query.filter(
-        DailyLog.user_id == user_id,
-        DailyLog.date >= last_weigh_in.date
-    ).all()
+    if last_weigh_in is None:
+        logs = DailyLog.query.filter(DailyLog.user_id == user_id).all()
+    else:
+        logs = DailyLog.query.filter(
+            DailyLog.user_id == user_id,
+            DailyLog.date >= last_weigh_in.date
+        ).all()
 
 
     daily_logs = [
@@ -92,7 +94,7 @@ def weigh_in():
     user.rmr=new_rmr
     user.daily_target = calculate_daily_target(user.rmr, user.activity_level, user.deficit)
     db.session.commit()
-    return jsonify({"new_rmr": new_rmr})
+    return jsonify({"new_rmr": new_rmr, "new_daily_target": user.daily_target})
 
 
 
