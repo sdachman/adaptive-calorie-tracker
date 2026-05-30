@@ -1,17 +1,21 @@
 import { useState } from 'react'
-import {useNavigate} from 'react-router-dom'
+import {useNavigate, Navigate} from 'react-router-dom'
 
 
 
 
 
 function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
+  if (localStorage.getItem("user_id")!= null){
+    return <Navigate to = "/dashboard" />
+  }
   const [weight, setWeight] = useState("")
   const [height, setHeight] = useState("")
   const [age, setAge] = useState("")
   const [sex, setSex] = useState("male")
   const [activityLevel, setActivityLevel] = useState("sedentary")
   const [weightLossPace, setWeightLossPace] = useState("1.0")
+  const [errorMessage, setErrorMessage] = useState("")
 
 
   
@@ -21,6 +25,9 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
 
 
   async function handleSubmit() {
+    if (weight !== "" && height !== "" && age !== "") {
+
+    
     const response = await fetch('http://127.0.0.1:5000/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json'},
@@ -34,8 +41,11 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
     setDailyTarget(data.morning_target)
     setRMR(data.rmr)
     setTDEE(data.tdee)
+    localStorage.setItem("user_id", data.user_id)
     navigate('/dashboard')
-
+    } else {
+        setErrorMessage("Please Fill All Fields!")
+    }
     
   }
 
@@ -108,6 +118,8 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
     <div>
       <button onClick={handleSubmit}>Create Account</button>
     </div>
+
+    <div> <p style ={{color:'red'}}>{errorMessage}</p> </div>
 
 
 

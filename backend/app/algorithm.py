@@ -75,6 +75,8 @@ def calculate_activity_multiplier(activity_level):
         multiplier = activity_multipliers.get(activity_level, 1.2)
         return multiplier
 
+def get_tdee(rmr, activityLevel):
+     return rmr*calculate_activity_multiplier(activityLevel)
 
 def calculate_daily_target(current_rmr, activity_level, deficit):
     multiplier = calculate_activity_multiplier(activity_level)

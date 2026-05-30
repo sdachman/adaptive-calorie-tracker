@@ -54,6 +54,7 @@ function WeighIn({setTDEE, setRMR, setDailyTarget, userId}) {
             <p style ={{color:'red'}}>{errorMessage}</p>
         </div>
 
+        <div><button onClick={ () => navigate('/dashboard')}>Back To Dashboard</button></div>
 
 
 

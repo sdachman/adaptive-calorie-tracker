@@ -1,17 +1,28 @@
 import { useState } from 'react'
 import {useNavigate, Navigate} from 'react-router-dom'
+import { useEffect } from 'react'
 
 function Dashboard({RMR, TDEE, userId, dailyTarget}){
     if (!userId) {
         return <Navigate to = "/" />
     }
-
     const [calsEaten, setCalsEaten] = useState("")
     const [calsBurned, setCalsBurned] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
+    const navigate = useNavigate()
+    const [userLogs, setUserLogs] = useState([])
     
 
-    const navigate = useNavigate()
+        async function fetchLogs(){
+            const response = await fetch(`http://127.0.0.1:5000/api/logs/${userId}`)
+            const data = await response.json()
+            setUserLogs(data)
+        }
+
+
+    useEffect(()=> {
+        fetchLogs()
+    }, [])
 
     async function handleSubmit() {
         if (calsEaten !== "" && calsBurned !=="") {
@@ -24,6 +35,8 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
             setCalsEaten("")
             setCalsBurned("")
             console.log(data)
+            fetchLogs()
+
         } else {
             setErrorMessage("Please Fill All Fields!")
         }
@@ -71,8 +84,7 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
 
         <br/>
         <br/>
-        <br/>
-        <br/>
+       
 
 
         <div>
@@ -100,8 +112,34 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
         <div> <p style ={{color:'red'}}>{errorMessage}</p> </div>
 
         <br/>
-        <br/>
+
         <div><button onClick={ () => navigate('/weigh-in')}>Log Your Weight</button></div>
+
+        <div>
+            <table border ="1">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Calories Eaten</th>
+                        <th>Calories Burned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {userLogs.map((log, index) => (
+                        <tr key ={index}>
+                            <td>{log.date}</td>
+                            <td>{log.calories_eaten}</td>
+                            <td>{log.calories_burned}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+
+
+
+        </div>
+        
     </div>
    )
 

@@ -1,9 +1,10 @@
 
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import Signup from './pages/Signup'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Dashboard from './pages/Dashboard'
 import WeighIn from './pages/WeighIn'
+
 
 
 
@@ -13,6 +14,25 @@ function App() {
   const [dailyTarget, setDailyTarget] = useState(null)
   const [RMR, setRMR] = useState(null)
   const [TDEE, setTDEE] = useState(null)
+  const navigate = useNavigate()
+
+  async function getData(user_id){
+    const response = await fetch(`http://127.0.0.1:5000/api/user/${user_id}`)
+    const data = await response.json()
+    setUserId(user_id)
+    setRMR(data.rmr)
+    setTDEE(data.tdee)
+    setDailyTarget(data.daily_target)
+  }
+    
+  
+  useEffect(()=> {
+    let user_id = localStorage.getItem("user_id")
+    if (user_id != null){
+      getData(user_id)
+      navigate('/dashboard')
+    } 
+  }, [])
 
 
   return (

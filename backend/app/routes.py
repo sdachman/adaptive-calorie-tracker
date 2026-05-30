@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.algorithm import calculate_starting_calories, calculate_deficit, adjust_rmr, calculate_daily_target, calculate_activity_multiplier
+from app.algorithm import calculate_starting_calories, calculate_deficit, adjust_rmr, calculate_daily_target, calculate_activity_multiplier, get_tdee
 from app.models import User, DailyLog, WeighIn
 from datetime import date
 from . import db
@@ -114,5 +114,24 @@ def get_logs(user_id):
 
     return jsonify(daily_logs)
 
+
+@main.route("/api/user/<user_id>", methods = ["GET"])
+def get_user(user_id):
+    data = User.query.get(user_id)
+    if (data is None): return jsonify({"error": "user not found"}), 404
+    tdee = get_tdee(data.rmr, data.activity_level)
+    userData = {
+        "weight": data.weight,
+        "height": data.height,
+        "age": data.age,
+        "sex": data.sex,
+        "activity_level": data.activity_level,
+        "weight_loss_pace": data.weight_loss_pace,
+        "deficit": data.deficit,
+        "rmr": data.rmr,
+        "daily_target": data.daily_target,
+        "tdee": tdee
+    }
+    return jsonify(userData)
 
             
