@@ -64,15 +64,20 @@ def adjust_rmr(current_rmr, start_weight, end_weight, daily_logs):
     new_rmr = current_rmr + rmr_adjustment
     return round(new_rmr)
 
-def calculate_daily_target(current_rmr, activity_level, deficit):
-    activity_multipliers = {
+def calculate_activity_multiplier(activity_level):
+        activity_multipliers = {
         "sedentary": 1.2,
         "light": 1.375,
         "moderate": 1.55,
         "active": 1.725,
         "very_active": 1.9
     }
-    multiplier = activity_multipliers.get(activity_level, 1.2)
+        multiplier = activity_multipliers.get(activity_level, 1.2)
+        return multiplier
+
+
+def calculate_daily_target(current_rmr, activity_level, deficit):
+    multiplier = calculate_activity_multiplier(activity_level)
     tdee = current_rmr * multiplier
     daily_target = tdee - deficit
     return round(daily_target)

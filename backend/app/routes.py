@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.algorithm import calculate_starting_calories, calculate_deficit, adjust_rmr, calculate_daily_target
+from app.algorithm import calculate_starting_calories, calculate_deficit, adjust_rmr, calculate_daily_target, calculate_activity_multiplier
 from app.models import User, DailyLog, WeighIn
 from datetime import date
 from . import db
@@ -90,15 +90,29 @@ def weigh_in():
     ]
 
     new_rmr = adjust_rmr(user.rmr,user.weight, new_weight, daily_logs)
+    activity_multiplier = calculate_activity_multiplier(user.activity_level)
+    new_tdee = round(new_rmr*activity_multiplier)
     user.weight = new_weight
     user.rmr=new_rmr
     user.daily_target = calculate_daily_target(user.rmr, user.activity_level, user.deficit)
     db.session.commit()
-    return jsonify({"new_rmr": new_rmr, "new_daily_target": user.daily_target})
+    return jsonify({"new_rmr": new_rmr, "new_daily_target": user.daily_target, "new_tdee": new_tdee})
 
 
+@main.route("/api/logs/<user_id>", methods = ["GET"])
+def get_logs(user_id):
+    logs = DailyLog.query.filter(DailyLog.user_id == user_id).all()
 
+    daily_logs = [
+        {
+            "date":log.date.strftime("%Y-%m-%d"),
+            "calories_eaten": log.calories_eaten,
+            "calories_burned": log.calories_burned
+        }
+        for log in logs
+    ]
 
+    return jsonify(daily_logs)
 
 
             

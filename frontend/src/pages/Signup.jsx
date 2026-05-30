@@ -5,16 +5,15 @@ import {useNavigate} from 'react-router-dom'
 
 
 
-function Signup({ setUserId, setDailyTarget }) {
+function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
   const [weight, setWeight] = useState("")
   const [height, setHeight] = useState("")
   const [age, setAge] = useState("")
   const [sex, setSex] = useState("male")
   const [activityLevel, setActivityLevel] = useState("sedentary")
   const [weightLossPace, setWeightLossPace] = useState("1.0")
-  const [RMR, setRMR] = useState("")
-  const [TDEE, setTDEE] = useState("")
-  const [targetCals, setTargetCals] = useState("")
+
+
   
   const navigate = useNavigate()
 
@@ -27,16 +26,18 @@ function Signup({ setUserId, setDailyTarget }) {
       headers: { 'Content-Type': 'application/json'},
       body: JSON.stringify({"weight_lbs": Number(weight), "age": Number(age), "sex": sex, "height_inches": Number(height), 'activity_level': activityLevel, "weight_loss_pace": weightLossPace})
   })
+
+
+
     const data = await response.json()
     setUserId(data.user_id)
     setDailyTarget(data.morning_target)
-    navigate('/dashboard')
-
     setRMR(data.rmr)
     setTDEE(data.tdee)
-    setTargetCals(data.morning_target)
-}
+    navigate('/dashboard')
 
+    
+  }
 
 
   return (
@@ -108,17 +109,9 @@ function Signup({ setUserId, setDailyTarget }) {
       <button onClick={handleSubmit}>Create Account</button>
     </div>
 
-    <div>
-      <p>Resting Metabolic Rate: {RMR}</p>
-    </div>
 
-    <div>
-      <p>Total Daily Energy Expenditure: {TDEE}</p>
-    </div>
 
-    <div>
-    <p>Daily Calorie Target: {targetCals}</p>
-     </div>
+
 
     
 
