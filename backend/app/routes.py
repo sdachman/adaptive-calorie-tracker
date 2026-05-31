@@ -3,6 +3,8 @@ from app.algorithm import calculate_starting_calories, calculate_deficit, adjust
 from app.models import User, DailyLog, WeighIn
 from datetime import date
 from . import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token
 
 main = Blueprint("main", __name__)
 
@@ -14,8 +16,16 @@ def signup():
     height_inches=data["height_inches"]
     age=data["age"]
     sex=data["sex"]
+    email = data["email"]
+    password = data["password"]
     activity_level=data["activity_level"]
     weight_loss_pace=data["weight_loss_pace"]
+    
+
+
+    password_hash = generate_password_hash(password)
+
+
 
     rmr, tdee, morning_target = calculate_starting_calories(
         weight_lbs,
@@ -28,16 +38,18 @@ def signup():
 
     deficit = calculate_deficit(weight_loss_pace)
     ## create a new user object to store their data
-    new_user = User(weight = weight_lbs, height=height_inches, age = age, sex=sex,
+    new_user = User(weight = weight_lbs, height=height_inches, email = email, password_hash = password_hash, age = age, sex=sex,
                 activity_level = activity_level, weight_loss_pace = weight_loss_pace,
                 rmr = rmr, daily_target = morning_target, deficit = deficit)
     db.session.add(new_user)
     db.session.commit()
+    token = create_access_token(identity=new_user.id)
     return jsonify({
         "user_id": new_user.id,
         "rmr": rmr,
         "tdee": tdee,
-        "morning_target": morning_target
+        "morning_target": morning_target,
+        "token": token
 
     })
 
@@ -135,3 +147,17 @@ def get_user(user_id):
     return jsonify(userData)
 
             
+@main.route("/api/login", methods = ["POST"])
+def login():
+    data = request.get_json()
+    email = data["email"]
+    password = data["password"]
+    user_data=User.query.filter_by(email=email).first()
+    if (user_data is None): return jsonify({"error": "user not found"}), 404
+    if ( not (check_password_hash(user_data.password_hash, password))): return jsonify({"error": "incorrect password" }), 401
+    token = create_access_token(identity=user_data.id)
+    return jsonify({"token":token, "user_id": user_data.id})
+
+
+
+

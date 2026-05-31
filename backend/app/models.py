@@ -10,6 +10,8 @@ class User(db.Model):
     # means this column i shte unique identifier for each row and python will automatically increment for me
     weight = db.Column(db.Float)
     height = db.Column(db.Float)
+    email = db.Column(db.String, nullable = False, unique = True)
+    password_hash = db.Column(db.String,nullable = False)
     age = db.Column(db.Integer)
     sex = db.Column(db.String)
     activity_level = db.Column(db.String)

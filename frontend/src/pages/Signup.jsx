@@ -16,6 +16,8 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
   const [activityLevel, setActivityLevel] = useState("sedentary")
   const [weightLossPace, setWeightLossPace] = useState("1.0")
   const [errorMessage, setErrorMessage] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
 
   
@@ -25,13 +27,12 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
 
 
   async function handleSubmit() {
-    if (weight !== "" && height !== "" && age !== "") {
-
+    if (weight !== "" && height !== "" && age !== "" && email!== "" && password !== "") {
     
     const response = await fetch('http://127.0.0.1:5000/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json'},
-      body: JSON.stringify({"weight_lbs": Number(weight), "age": Number(age), "sex": sex, "height_inches": Number(height), 'activity_level': activityLevel, "weight_loss_pace": weightLossPace})
+      body: JSON.stringify({"password": password, "email": email, "weight_lbs": Number(weight), "age": Number(age), "sex": sex, "height_inches": Number(height), 'activity_level': activityLevel, "weight_loss_pace": weightLossPace})
   })
 
 
@@ -42,6 +43,7 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
     setRMR(data.rmr)
     setTDEE(data.tdee)
     localStorage.setItem("user_id", data.user_id)
+    localStorage.setItem("token", data.token)
     navigate('/dashboard')
     } else {
         setErrorMessage("Please Fill All Fields!")
@@ -57,12 +59,29 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
 
     <div>
       <h1>Adaptive Calorie Tracker</h1>
+      
+      <div>
+        <label> Email: </label>
+        <input 
+        type = "email"
+        value = {email}
+        onChange = {(event)=> setEmail(event.target.value)}/>
+      </div>
+
+      <div>
+        <label> Password: </label>
+        <input 
+        type = "password"
+        value = {password}
+        onChange = {(event)=> setPassword(event.target.value)}/>
+      </div>
+      
+
       <label>Weight (lbs)</label>
       <input
         type ="number"
         value ={weight}
         onChange = {(event) => setWeight(event.target.value)}/>
-      <p>{weight}</p>
 
       {/* height input */}
       <label> Height (in) </label>
@@ -70,7 +89,6 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
         type = "number"
         value = {height}
         onChange = {(event)=> setHeight(event.target.value)}/>
-      <p>{height}</p>
 
       {/* age input */}
       <label> Age </label>
@@ -78,7 +96,6 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
         type = "number"
         value = {age}
         onChange = {(event)=> setAge(event.target.value)}/>
-      <p>{age}</p>
 
     </div>
 
