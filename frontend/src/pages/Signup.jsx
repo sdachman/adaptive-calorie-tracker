@@ -6,9 +6,12 @@ import {useNavigate, Navigate} from 'react-router-dom'
 
 
 function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
+
   if (localStorage.getItem("user_id")!= null){
     return <Navigate to = "/dashboard" />
   }
+
+
   const [weight, setWeight] = useState("")
   const [height, setHeight] = useState("")
   const [age, setAge] = useState("")
@@ -37,14 +40,20 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
 
 
 
-    const data = await response.json()
-    setUserId(data.user_id)
-    setDailyTarget(data.morning_target)
-    setRMR(data.rmr)
-    setTDEE(data.tdee)
-    localStorage.setItem("user_id", data.user_id)
-    localStorage.setItem("token", data.token)
-    navigate('/dashboard')
+        const data = await response.json()
+        if (response.ok){
+            setUserId(data.user_id)
+            setDailyTarget(data.morning_target)
+            setRMR(data.rmr)
+            setTDEE(data.tdee)
+            localStorage.setItem("user_id", data.user_id)
+            localStorage.setItem("token", data.token)
+            navigate('/dashboard')
+        } else {
+            setErrorMessage(data.error)
+        }
+        
+ 
     } else {
         setErrorMessage("Please Fill All Fields!")
     }
@@ -57,7 +66,7 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
   
   <div>
 
-    <div>
+    
       <h1>Adaptive Calorie Tracker</h1>
       
       <div>
@@ -76,27 +85,29 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
         onChange = {(event)=> setPassword(event.target.value)}/>
       </div>
       
-
+    <div>
       <label>Weight (lbs)</label>
       <input
         type ="number"
         value ={weight}
         onChange = {(event) => setWeight(event.target.value)}/>
+    </div>
 
+    <div>
       {/* height input */}
       <label> Height (in) </label>
       <input
         type = "number"
         value = {height}
         onChange = {(event)=> setHeight(event.target.value)}/>
-
+    </div>
+    <div>
       {/* age input */}
       <label> Age </label>
       <input
         type = "number"
         value = {age}
         onChange = {(event)=> setAge(event.target.value)}/>
-
     </div>
 
     <div>
@@ -137,6 +148,9 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
     </div>
 
     <div> <p style ={{color:'red'}}>{errorMessage}</p> </div>
+
+    <div><button onClick={ () => navigate('/')}>Already have an account? Log in here</button></div>
+
 
 
 

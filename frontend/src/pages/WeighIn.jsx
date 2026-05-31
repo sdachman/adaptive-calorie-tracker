@@ -2,8 +2,8 @@ import { useState } from 'react'
 import {useNavigate, Navigate} from 'react-router-dom'
 
 function WeighIn({setTDEE, setRMR, setDailyTarget, userId}) {
-    if (!userId) {
-        return <Navigate to = "/" />
+    if (!localStorage.getItem("user_id")) {
+        return <Navigate to = "/signup" />
     }
     
     const [weight, setWeight] = useState("")

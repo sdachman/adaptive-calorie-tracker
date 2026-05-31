@@ -11,6 +11,8 @@ main = Blueprint("main", __name__)
 
 @main.route("/api/signup", methods=["POST"])
 def signup():
+
+    
     data = request.get_json()
     weight_lbs=data["weight_lbs"]
     height_inches=data["height_inches"]
@@ -20,10 +22,13 @@ def signup():
     password = data["password"]
     activity_level=data["activity_level"]
     weight_loss_pace=data["weight_loss_pace"]
+
+    user_data=User.query.filter_by(email=email).first()
+    if (user_data is not None): return jsonify({"error": "An account with this email already exists"}), 409
     
 
 
-    password_hash = generate_password_hash(password)
+    password_hash = generate_password_hash(password, method ='pbkdf2:sha256')
 
 
 

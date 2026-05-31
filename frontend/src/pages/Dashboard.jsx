@@ -3,8 +3,8 @@ import {useNavigate, Navigate} from 'react-router-dom'
 import { useEffect } from 'react'
 
 function Dashboard({RMR, TDEE, userId, dailyTarget}){
-    if (!userId) {
-        return <Navigate to = "/" />
+    if (!localStorage.getItem("user_id")) {
+        return <Navigate to = "/signup" />
     }
     const [calsEaten, setCalsEaten] = useState("")
     const [calsBurned, setCalsBurned] = useState("")
@@ -14,7 +14,7 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
     
 
         async function fetchLogs(){
-            const response = await fetch(`http://127.0.0.1:5000/api/logs/${userId}`)
+            const response = await fetch(`http://127.0.0.1:5000/api/logs/${localStorage.getItem("user_id")}`)
             const data = await response.json()
             setUserLogs(data)
         }
