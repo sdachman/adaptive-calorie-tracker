@@ -18,7 +18,13 @@ function App() {
   const navigate = useNavigate()
 
   async function getData(user_id){
-    const response = await fetch(`http://127.0.0.1:5000/api/user/${user_id}`)
+    const response = await fetch(`http://127.0.0.1:5000/api/user/${user_id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      }
+    }
+
+    )
     const data = await response.json()
     setUserId(user_id)
     setRMR(data.rmr)
@@ -36,11 +42,23 @@ function App() {
   }, [])
 
 
+  function handleLogout(){
+    localStorage.removeItem("user_id")
+    localStorage.removeItem("token")
+    setUserId(null)
+    setDailyTarget(null)
+    setRMR(null)
+    setTDEE(null)
+    navigate('/')
+
+  }
+
+
   return (
     <Routes>
       <Route path = "/" element = {<Login getData = {getData}/>}/>
       <Route path ="/signup" element = {<Signup setTDEE = {setTDEE} setRMR = {setRMR} setUserId = {setUserId} setDailyTarget = {setDailyTarget}/>} />
-      <Route path ="/dashboard" element = {<Dashboard RMR = {RMR} TDEE = {TDEE} userId = {userId} dailyTarget = {dailyTarget} />} />
+      <Route path ="/dashboard" element = {<Dashboard handleLogout = {handleLogout} RMR = {RMR} TDEE = {TDEE} userId = {userId} dailyTarget = {dailyTarget} />} />
       <Route path ="/weigh-in" element = {<WeighIn setTDEE = {setTDEE} setRMR = {setRMR} setDailyTarget = {setDailyTarget} userId = {userId} />} />
       
     </Routes>

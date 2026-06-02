@@ -2,33 +2,64 @@ import { useState } from 'react'
 import {useNavigate, Navigate} from 'react-router-dom'
 import { useEffect } from 'react'
 
-function Dashboard({RMR, TDEE, userId, dailyTarget}){
+function Dashboard({handleLogout, RMR, TDEE, userId, dailyTarget}){
     if (!localStorage.getItem("user_id")) {
-        return <Navigate to = "/signup" />
+        return <Navigate to = "/" />
     }
     const [calsEaten, setCalsEaten] = useState("")
     const [calsBurned, setCalsBurned] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
     const navigate = useNavigate()
     const [userLogs, setUserLogs] = useState([])
+    const [weighInLogs, setWeighInLogs] = useState([])
     
 
-        async function fetchLogs(){
-            const response = await fetch(`http://127.0.0.1:5000/api/logs/${localStorage.getItem("user_id")}`)
-            const data = await response.json()
+    async function fetchLogs(){
+        const response = await fetch(`http://127.0.0.1:5000/api/logs/${localStorage.getItem("user_id")}`,{
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            }
+        }    
+        )
+        const data = await response.json()
+        if (response.ok){
             setUserLogs(data)
+        } else {
+            console.log("fetchLogs error:", data)
+        }
+    }
+
+    async function fetchWeighIns(){
+        const response = await fetch(`http://127.0.0.1:5000/api/weigh-in-log/${localStorage.getItem("user_id")}`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }   
+        }
+        )
+        const data = await response.json()
+        if (response.ok){
+            setWeighInLogs(data)
+        } else{
+            console.log("fetchWeighIn Error:", data)
         }
 
+    }
 
     useEffect(()=> {
         fetchLogs()
+        fetchWeighIns()
     }, [])
+
+
 
     async function handleSubmit() {
         if (calsEaten !== "" && calsBurned !=="") {
             const response = await fetch('http://127.0.0.1:5000/api/log-day', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            },
             body: JSON.stringify({"calories_eaten": Number(calsEaten), "calories_burned": Number(calsBurned), "user_id": Number(userId)})
         })
             const data = await response.json()
@@ -88,11 +119,11 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
 
 
         <div>
-            <h2> Log Your Day </h2>
+            <h2>Log Your Day</h2>
         </div>
         <div>
             {/* cals eaten input */}
-            <label> Calories Eaten Today </label>
+            <label>Calories Eaten Today </label>
             <input
                 type = "number"
                 value = {calsEaten}
@@ -100,7 +131,7 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
         </div>
         <div>
             {/* cals eaten input */}
-            <label> Calories Burned Today </label>
+            <label>Calories Burned Today </label>
             <input
                 type = "number"
                 value = {calsBurned}
@@ -115,7 +146,16 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
 
         <div><button onClick={ () => navigate('/weigh-in')}>Log Your Weight</button></div>
 
-        <div>
+         <br/>
+         <div>
+            <button onClick={handleLogout}>Log Out</button>
+         </div>
+
+        {/* both tables */}
+        <div style = {{display: 'flex', gap: '40px', justifyContent: 'space-between', paddingRight: '40px', paddingLeft: '40px'}}>
+        {/* log table */}
+        <div style = {{textAlign: "left"}}>
+            <h3>Daily Logs</h3>
             <table border ="1">
                 <thead>
                     <tr>
@@ -139,6 +179,36 @@ function Dashboard({RMR, TDEE, userId, dailyTarget}){
 
 
         </div>
+        {/* log table */}
+
+
+        {/* weigh in table */}         
+        <div style = {{ textAlign: "left" }}> 
+            <h3>Weigh In Logs</h3>
+            <table border = "1">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Weight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {weighInLogs.map((log, index) => (
+                        <tr key = {index}>
+                            <td>{log.date}</td> {/* the brackets allow you to put in a javascript vairable into html otherwise it would treat it as just plain text */}
+                            <td>{log.weight} lbs </td>
+                        </tr>
+                
+                    ))}
+                </tbody>
+            </table>
+
+
+
+        </div>
+        {/* weigh in table */}    
+        </div>
+        {/* both table */}
         
     </div>
    )

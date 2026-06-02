@@ -3,7 +3,7 @@ import {useNavigate, Navigate} from 'react-router-dom'
 
 function WeighIn({setTDEE, setRMR, setDailyTarget, userId}) {
     if (!localStorage.getItem("user_id")) {
-        return <Navigate to = "/signup" />
+        return <Navigate to = "/" />
     }
     
     const [weight, setWeight] = useState("")
@@ -17,7 +17,10 @@ function WeighIn({setTDEE, setRMR, setDailyTarget, userId}) {
             setErrorMessage("")
             const response = await fetch('http://127.0.0.1:5000/api/weigh-in', {
                 method: "POST",
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                },
                 body: JSON.stringify({"new_weight": Number(weight), "user_id": Number(userId)})
             })
             const data = await response.json()

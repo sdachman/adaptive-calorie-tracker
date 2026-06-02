@@ -4,7 +4,7 @@ from app.models import User, DailyLog, WeighIn
 from datetime import date
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 main = Blueprint("main", __name__)
 
@@ -48,7 +48,7 @@ def signup():
                 rmr = rmr, daily_target = morning_target, deficit = deficit)
     db.session.add(new_user)
     db.session.commit()
-    token = create_access_token(identity=new_user.id)
+    token = create_access_token(identity=str(new_user.id))
     return jsonify({
         "user_id": new_user.id,
         "rmr": rmr,
@@ -58,12 +58,16 @@ def signup():
 
     })
 
+
 @main.route("/api/log-day", methods = ["POST"])
+@jwt_required()
 def log_day():
     data = request.get_json()
     cals_eaten = data["calories_eaten"]
     cals_burned = data["calories_burned"]
     user_id = data['user_id']
+    current_user_id = get_jwt_identity()
+    if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
 
     log = DailyLog(calories_eaten = cals_eaten,
                    calories_burned = cals_burned,
@@ -76,11 +80,14 @@ def log_day():
 
 
 @main.route("/api/weigh-in", methods = ["POST"])
+@jwt_required()
 def weigh_in():
     data = request.get_json()
     new_weight = data["new_weight"]
     user_id = data["user_id"]
     user = User.query.get(user_id)
+    current_user_id = get_jwt_identity()
+    if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
     
     last_weigh_in = WeighIn.query.filter_by(user_id=user_id).order_by(WeighIn.date.desc()).first()
 
@@ -117,8 +124,11 @@ def weigh_in():
 
 
 @main.route("/api/logs/<user_id>", methods = ["GET"])
+@jwt_required()
 def get_logs(user_id):
     logs = DailyLog.query.filter(DailyLog.user_id == user_id).all()
+    current_user_id = get_jwt_identity()
+    if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
 
     daily_logs = [
         {
@@ -133,9 +143,12 @@ def get_logs(user_id):
 
 
 @main.route("/api/user/<user_id>", methods = ["GET"])
+@jwt_required()
 def get_user(user_id):
     data = User.query.get(user_id)
     if (data is None): return jsonify({"error": "user not found"}), 404
+    current_user_id = get_jwt_identity()
+    if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
     tdee = get_tdee(data.rmr, data.activity_level)
     userData = {
         "weight": data.weight,
@@ -151,7 +164,7 @@ def get_user(user_id):
     }
     return jsonify(userData)
 
-            
+
 @main.route("/api/login", methods = ["POST"])
 def login():
     data = request.get_json()
@@ -160,9 +173,28 @@ def login():
     user_data=User.query.filter_by(email=email).first()
     if (user_data is None): return jsonify({"error": "user not found"}), 404
     if ( not (check_password_hash(user_data.password_hash, password))): return jsonify({"error": "incorrect password" }), 401
-    token = create_access_token(identity=user_data.id)
+    token = create_access_token(identity=str(user_data.id))
     return jsonify({"token":token, "user_id": user_data.id})
 
+
+
+
+@main.route("/api/weigh-in-log/<user_id>", methods = ["GET"])
+@jwt_required()
+def get_weighIn(user_id): #user_id is the <user_id>
+    logs=WeighIn.query.filter(WeighIn.user_id == user_id).all()
+    current_user_id = get_jwt_identity() # this token comes from the fetch call when we do authorization: bearer thing
+    if (current_user_id != user_id): return jsonify({"error": "forbidden, you do not hav permission"}), 403
+
+    weigh_in_logs = [
+        {
+            "date": log.date.strftime("%Y-%m-%d"),
+            "weight": log.new_weight
+        }
+        for log in logs
+    ]
+
+    return jsonify(weigh_in_logs)
 
 
 

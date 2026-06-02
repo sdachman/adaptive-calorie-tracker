@@ -149,6 +149,9 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
 
     <div> <p style ={{color:'red'}}>{errorMessage}</p> </div>
 
+    <br/>
+    <br/>
+
     <div><button onClick={ () => navigate('/')}>Already have an account? Log in here</button></div>
 
 

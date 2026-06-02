@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
@@ -18,6 +19,7 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tracker.db'
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
     db.init_app(app)
     auth.init_app(app)
 
