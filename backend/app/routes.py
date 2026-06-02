@@ -43,7 +43,7 @@ def signup():
 
     deficit = calculate_deficit(weight_loss_pace)
     ## create a new user object to store their data
-    new_user = User(weight = weight_lbs, height=height_inches, email = email, password_hash = password_hash, age = age, sex=sex,
+    new_user = User(weight = weight_lbs, height=height_inches, signup_date = date.today(), email = email, password_hash = password_hash, age = age, sex=sex,
                 activity_level = activity_level, weight_loss_pace = weight_loss_pace,
                 rmr = rmr, daily_target = morning_target, deficit = deficit)
     db.session.add(new_user)
@@ -155,6 +155,7 @@ def get_user(user_id):
         "height": data.height,
         "age": data.age,
         "sex": data.sex,
+        "signup_date": data.signup_date.strftime("%Y-%m-%d"),
         "activity_level": data.activity_level,
         "weight_loss_pace": data.weight_loss_pace,
         "deficit": data.deficit,

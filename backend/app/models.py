@@ -16,6 +16,7 @@ class User(db.Model):
     sex = db.Column(db.String)
     activity_level = db.Column(db.String)
     weight_loss_pace = db.Column(db.String)
+    signup_date = db.Column(db.DateTime)
     deficit = db.Column(db.Float)
     rmr = db.Column(db.Float)
     daily_target = db.Column(db.Float)

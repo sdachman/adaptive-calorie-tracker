@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {useNavigate, Navigate} from 'react-router-dom'
 import { useEffect } from 'react'
 
-function Dashboard({handleLogout, RMR, TDEE, userId, dailyTarget}){
+function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     if (!localStorage.getItem("user_id")) {
         return <Navigate to = "/" />
     }
@@ -45,6 +45,20 @@ function Dashboard({handleLogout, RMR, TDEE, userId, dailyTarget}){
 
     }
 
+
+    function untilNextWeighIn() {
+        if (weighInLogs.length == 0) {
+            const diffInMs = new Date() - new Date(signupDate)
+            const diffInDays = Math.floor(diffInMs / (1000*60*60*24))
+            return 14-diffInDays
+        } else {
+            const last_weigh_in = weighInLogs[weighInLogs.length -1]
+            const diffInMs = new Date() - new Date(last_weigh_in.date)
+            const diffInDays = Math.floor(diffInMs / (1000*60*60*24))
+            return 7-diffInDays
+        }
+    }
+
     useEffect(()=> {
         fetchLogs()
         fetchWeighIns()
@@ -73,7 +87,7 @@ function Dashboard({handleLogout, RMR, TDEE, userId, dailyTarget}){
         }
     }
     
-
+    
 
 
     return(
@@ -144,12 +158,13 @@ function Dashboard({handleLogout, RMR, TDEE, userId, dailyTarget}){
 
         <br/>
 
+        <div> <h4>Days Until Next Weigh In: {untilNextWeighIn()}</h4> </div>
+        
         <div><button onClick={ () => navigate('/weigh-in')}>Log Your Weight</button></div>
 
-         <br/>
-         <div>
-            <button onClick={handleLogout}>Log Out</button>
-         </div>
+
+        <br/>
+
 
         {/* both tables */}
         <div style = {{display: 'flex', gap: '40px', justifyContent: 'space-between', paddingRight: '40px', paddingLeft: '40px'}}>
@@ -209,6 +224,18 @@ function Dashboard({handleLogout, RMR, TDEE, userId, dailyTarget}){
         {/* weigh in table */}    
         </div>
         {/* both table */}
+        
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+
+        <div>
+            <button onClick={handleLogout}>Log Out</button>
+         </div>
         
     </div>
    )

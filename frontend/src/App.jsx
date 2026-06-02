@@ -15,6 +15,7 @@ function App() {
   const [dailyTarget, setDailyTarget] = useState(null)
   const [RMR, setRMR] = useState(null)
   const [TDEE, setTDEE] = useState(null)
+  const [signupDate, setSignupDate] = useState(null)
   const navigate = useNavigate()
 
   async function getData(user_id){
@@ -27,6 +28,7 @@ function App() {
     )
     const data = await response.json()
     setUserId(user_id)
+    setSignupDate(data.signup_date)
     setRMR(data.rmr)
     setTDEE(data.tdee)
     setDailyTarget(data.daily_target)
@@ -58,7 +60,7 @@ function App() {
     <Routes>
       <Route path = "/" element = {<Login getData = {getData}/>}/>
       <Route path ="/signup" element = {<Signup setTDEE = {setTDEE} setRMR = {setRMR} setUserId = {setUserId} setDailyTarget = {setDailyTarget}/>} />
-      <Route path ="/dashboard" element = {<Dashboard handleLogout = {handleLogout} RMR = {RMR} TDEE = {TDEE} userId = {userId} dailyTarget = {dailyTarget} />} />
+      <Route path ="/dashboard" element = {<Dashboard signupDate = {signupDate} handleLogout = {handleLogout} RMR = {RMR} TDEE = {TDEE} userId = {userId} dailyTarget = {dailyTarget} />} />
       <Route path ="/weigh-in" element = {<WeighIn setTDEE = {setTDEE} setRMR = {setRMR} setDailyTarget = {setDailyTarget} userId = {userId} />} />
       
     </Routes>

@@ -49,7 +49,7 @@ def adjust_rmr(current_rmr, start_weight, end_weight, daily_logs):
     Returns: new_rmr (int), new_tdee (int)
     """
      
-    LEARNING_RATE = 0.2  # will change later. decides how much we change rmr. lower means slower
+    LEARNING_RATE = 0.1  # will change later. decides how much we change rmr. lower means slower
     CALS_PER_POUND = 3500
     #calculate expected weight change
     total_calorie_gap = sum(
