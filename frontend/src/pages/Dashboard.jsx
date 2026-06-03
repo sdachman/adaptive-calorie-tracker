@@ -12,6 +12,7 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     const navigate = useNavigate()
     const [userLogs, setUserLogs] = useState([])
     const [weighInLogs, setWeighInLogs] = useState([])
+    const [logDate, setLogDate] = useState("")
     
 
     async function fetchLogs(){
@@ -66,19 +67,20 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
 
 
 
-    async function handleSubmit() {
-        if (calsEaten !== "" && calsBurned !=="") {
+    async function handleLogDay() {
+        if (calsEaten !== "" && calsBurned !=="" && logDate !== "") {
             const response = await fetch('http://127.0.0.1:5000/api/log-day', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem("token")}`
             },
-            body: JSON.stringify({"calories_eaten": Number(calsEaten), "calories_burned": Number(calsBurned), "user_id": Number(userId)})
+            body: JSON.stringify({"calories_eaten": Number(calsEaten), "calories_burned": Number(calsBurned), "user_id": Number(userId), "log_date": logDate})
         })
             const data = await response.json()
             setCalsEaten("")
             setCalsBurned("")
+            setLogDate("")
             console.log(data)
             fetchLogs()
 
@@ -150,9 +152,19 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
                 type = "number"
                 value = {calsBurned}
                 onChange = {(event)=> setCalsBurned(event.target.value)}/>
+        </div>
+        <div>
+            {/* date input */}
+            <label> Log Date </label>
+            <input 
+                type = "date"
+                value = {logDate}
+                onChange = {(event)=> setLogDate(event.target.value)}/>
 
         </div>
-        <div><button onClick={handleSubmit}>Log Day</button></div>
+
+
+        <div><button onClick={handleLogDay}>Log Day</button></div>
 
         <div> <p style ={{color:'red'}}>{errorMessage}</p> </div>
 

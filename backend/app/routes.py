@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.algorithm import calculate_starting_calories, calculate_deficit, adjust_rmr, calculate_daily_target, calculate_activity_multiplier, get_tdee
 from app.models import User, DailyLog, WeighIn
-from datetime import date
+from datetime import date, datetime, timedelta
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -66,12 +66,25 @@ def log_day():
     cals_eaten = data["calories_eaten"]
     cals_burned = data["calories_burned"]
     user_id = data['user_id']
+    log_date = datetime.strptime(data["log_date"], '%Y-%m-%d').date()
     current_user_id = get_jwt_identity()
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
 
+    if log_date > date.today():
+        return jsonify({"error": "cannot log a future date"}), 400
+    
+    duplicateCheck=DailyLog.query.filter(DailyLog.user_id == user_id, 
+                          DailyLog.date >= log_date,
+                          DailyLog.date < log_date + timedelta(days=1)).first()
+
+    if (duplicateCheck != None):
+        return jsonify({"error": "must delete existing log first"}), 400
+    
+
+
     log = DailyLog(calories_eaten = cals_eaten,
                    calories_burned = cals_burned,
-                   date = date.today(), user_id = user_id)
+                   date = log_date, user_id = user_id)
     db.session.add(log)
     db.session.commit()
 
@@ -90,6 +103,16 @@ def weigh_in():
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
     
     last_weigh_in = WeighIn.query.filter_by(user_id=user_id).order_by(WeighIn.date.desc()).first()
+
+    if (last_weigh_in is None): 
+        reference_date= user.signup_date.date()
+        required_days = 14
+    else: 
+        reference_date = last_weigh_in.date.date()
+        required_days = 7
+    
+    if (date.today()- reference_date).days < required_days:
+        return jsonify({"error": "not eligible yet"}), 400
 
 
     Weigh_in = WeighIn(new_weight = new_weight, date = date.today(), user_id = user_id)
