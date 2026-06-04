@@ -66,7 +66,6 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     }, [])
 
 
-
     async function handleLogDay() {
         if (calsEaten !== "" && calsBurned !=="" && logDate !== "") {
             const response = await fetch('http://127.0.0.1:5000/api/log-day', {

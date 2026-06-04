@@ -46,7 +46,11 @@ def signup():
     new_user = User(weight = weight_lbs, height=height_inches, signup_date = date.today(), email = email, password_hash = password_hash, age = age, sex=sex,
                 activity_level = activity_level, weight_loss_pace = weight_loss_pace,
                 rmr = rmr, daily_target = morning_target, deficit = deficit)
+    
     db.session.add(new_user)
+    db.session.commit()
+    starting_weight = WeighIn(new_weight = weight_lbs, date = date.today(), recalc = False, user_id = new_user.id)
+    db.session.add(starting_weight)
     db.session.commit()
     token = create_access_token(identity=str(new_user.id))
     return jsonify({
@@ -101,7 +105,12 @@ def weigh_in():
     user = User.query.get(user_id)
     current_user_id = get_jwt_identity()
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
-    
+    duplicateCheck=WeighIn.query.filter(WeighIn.user_id == user_id, 
+                            WeighIn.date >= date.today(),
+                            WeighIn.date < date.today() + timedelta(days=1)).first()
+
+    if (duplicateCheck is not None): return jsonify({"error": "You have already logged today's weight"})
+
     last_weigh_in = WeighIn.query.filter(WeighIn.user_id == user_id, WeighIn.recalc == True).order_by(WeighIn.date.desc()).first()
 
     if (last_weigh_in is None): 

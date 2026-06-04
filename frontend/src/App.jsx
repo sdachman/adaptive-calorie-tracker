@@ -59,7 +59,7 @@ function App() {
   return (
     <Routes>
       <Route path = "/" element = {<Login getData = {getData}/>}/>
-      <Route path ="/signup" element = {<Signup setTDEE = {setTDEE} setRMR = {setRMR} setUserId = {setUserId} setDailyTarget = {setDailyTarget}/>} />
+      <Route path ="/signup" element = {<Signup setSignupDate = {setSignupDate} getData = {getData} />} />
       <Route path ="/dashboard" element = {<Dashboard signupDate = {signupDate} handleLogout = {handleLogout} RMR = {RMR} TDEE = {TDEE} userId = {userId} dailyTarget = {dailyTarget} />} />
       <Route path ="/weigh-in" element = {<WeighIn setTDEE = {setTDEE} setRMR = {setRMR} setDailyTarget = {setDailyTarget} userId = {userId} />} />
       

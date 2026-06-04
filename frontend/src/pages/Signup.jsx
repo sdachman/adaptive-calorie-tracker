@@ -5,7 +5,7 @@ import {useNavigate, Navigate} from 'react-router-dom'
 
 
 
-function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
+function Signup({ setSignupDate, getData, setRMR, setTDEE, setUserId, setDailyTarget }) {
 
   if (localStorage.getItem("user_id")!= null){
     return <Navigate to = "/dashboard" />
@@ -42,12 +42,9 @@ function Signup({ setRMR, setTDEE, setUserId, setDailyTarget }) {
 
         const data = await response.json()
         if (response.ok){
-            setUserId(data.user_id)
-            setDailyTarget(data.morning_target)
-            setRMR(data.rmr)
-            setTDEE(data.tdee)
             localStorage.setItem("user_id", data.user_id)
             localStorage.setItem("token", data.token)
+            getData(data.user_id)
             navigate('/dashboard')
         } else {
             setErrorMessage(data.error)
