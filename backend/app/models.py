@@ -34,6 +34,7 @@ class WeighIn(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     new_weight = db.Column(db.Float)
     date = db.Column(db.DateTime)
+    recalc = db.Column(db.Boolean, default = False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 

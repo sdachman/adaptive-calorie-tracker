@@ -102,7 +102,7 @@ def weigh_in():
     current_user_id = get_jwt_identity()
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
     
-    last_weigh_in = WeighIn.query.filter_by(user_id=user_id).order_by(WeighIn.date.desc()).first()
+    last_weigh_in = WeighIn.query.filter(WeighIn.user_id == user_id, WeighIn.recalc == True).order_by(WeighIn.date.desc()).first()
 
     if (last_weigh_in is None): 
         reference_date= user.signup_date.date()
@@ -111,39 +111,47 @@ def weigh_in():
         reference_date = last_weigh_in.date.date()
         required_days = 7
     
-    if (date.today()- reference_date).days < required_days:
-        return jsonify({"error": "not eligible yet"}), 400
+    # if (date.today()- reference_date).days < required_days:
+    #     return jsonify({"error": "not eligible yet"}), 400
+
+    adjust = True if (date.today()- reference_date).days >= required_days else False
 
 
-    Weigh_in = WeighIn(new_weight = new_weight, date = date.today(), user_id = user_id)
+    Weigh_in = WeighIn(new_weight = new_weight, date = date.today(), recalc = adjust, user_id = user_id)
     db.session.add(Weigh_in)
     db.session.commit()
 
-    if last_weigh_in is None:
-        logs = DailyLog.query.filter(DailyLog.user_id == user_id).all()
+
+    if (adjust):
+
+        if last_weigh_in is None:
+            logs = DailyLog.query.filter(DailyLog.user_id == user_id).all()
+        else:
+            logs = DailyLog.query.filter(
+                DailyLog.user_id == user_id,
+                DailyLog.date >= last_weigh_in.date
+            ).all()
+
+
+        daily_logs = [
+            {
+                "calories_eaten": log.calories_eaten,
+                "calories_burned": log.calories_burned
+            }
+            for log in logs
+        ]
+
+        new_rmr = adjust_rmr(user.rmr,user.weight, new_weight, daily_logs)
+        activity_multiplier = calculate_activity_multiplier(user.activity_level)
+        new_tdee = round(new_rmr*activity_multiplier)
+        user.weight = new_weight
+        user.rmr=new_rmr
+        user.daily_target = calculate_daily_target(user.rmr, user.activity_level, user.deficit)
+        db.session.commit()
+        return jsonify({"recalculated": True,"new_rmr": new_rmr, "new_daily_target": user.daily_target, "new_tdee": new_tdee})
     else:
-        logs = DailyLog.query.filter(
-            DailyLog.user_id == user_id,
-            DailyLog.date >= last_weigh_in.date
-        ).all()
+        return jsonify({"recalculated": False})
 
-
-    daily_logs = [
-        {
-            "calories_eaten": log.calories_eaten,
-            "calories_burned": log.calories_burned
-        }
-        for log in logs
-    ]
-
-    new_rmr = adjust_rmr(user.rmr,user.weight, new_weight, daily_logs)
-    activity_multiplier = calculate_activity_multiplier(user.activity_level)
-    new_tdee = round(new_rmr*activity_multiplier)
-    user.weight = new_weight
-    user.rmr=new_rmr
-    user.daily_target = calculate_daily_target(user.rmr, user.activity_level, user.deficit)
-    db.session.commit()
-    return jsonify({"new_rmr": new_rmr, "new_daily_target": user.daily_target, "new_tdee": new_tdee})
 
 
 @main.route("/api/logs/<user_id>", methods = ["GET"])
