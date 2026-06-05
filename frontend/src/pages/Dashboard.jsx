@@ -48,7 +48,7 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
 
 
     function untilNextWeighIn() {
-        if (weighInLogs.length == 0) {
+        if (weighInLogs.length <=1) {
             const diffInMs = new Date() - new Date(signupDate)
             const diffInDays = Math.floor(diffInMs / (1000*60*60*24))
             return 14-diffInDays
@@ -77,11 +77,16 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
             body: JSON.stringify({"calories_eaten": Number(calsEaten), "calories_burned": Number(calsBurned), "user_id": Number(userId), "log_date": logDate})
         })
             const data = await response.json()
-            setCalsEaten("")
-            setCalsBurned("")
-            setLogDate("")
-            console.log(data)
-            fetchLogs()
+            if (response.ok) {
+                setCalsEaten("")
+                setCalsBurned("")
+                setLogDate("")
+                fetchLogs()
+            } else {
+                setErrorMessage(data.error)
+
+            }
+
 
         } else {
             setErrorMessage("Please Fill All Fields!")

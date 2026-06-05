@@ -75,14 +75,14 @@ def log_day():
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
 
     if log_date > date.today():
-        return jsonify({"error": "cannot log a future date"}), 400
+        return jsonify({"error": "Please select a date that is not in the future"}), 400
     
     duplicateCheck=DailyLog.query.filter(DailyLog.user_id == user_id, 
                           DailyLog.date >= log_date,
                           DailyLog.date < log_date + timedelta(days=1)).first()
 
     if (duplicateCheck != None):
-        return jsonify({"error": "must delete existing log first"}), 400
+        return jsonify({"error": "You have already logged this day. Please delete existing log first"}), 400
     
 
 
@@ -109,7 +109,7 @@ def weigh_in():
                             WeighIn.date >= date.today(),
                             WeighIn.date < date.today() + timedelta(days=1)).first()
 
-    if (duplicateCheck is not None): return jsonify({"error": "You have already logged today's weight"})
+    if (duplicateCheck is not None): return jsonify({"error": "You have already logged today's weight"}), 400
 
     last_weigh_in = WeighIn.query.filter(WeighIn.user_id == user_id, WeighIn.recalc == True).order_by(WeighIn.date.desc()).first()
 

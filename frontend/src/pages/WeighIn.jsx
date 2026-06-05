@@ -24,13 +24,16 @@ function WeighIn({setTDEE, setRMR, setDailyTarget, userId}) {
                 body: JSON.stringify({"new_weight": Number(weight), "user_id": Number(userId)})
             })
             const data = await response.json()
-            if (data.recalculated == true){
-                setDailyTarget(data.new_daily_target)
-                setRMR(data.new_rmr)
-                setTDEE(data.new_tdee)
+            if (response.ok) {
+                if (data.recalculated == true){
+                    setDailyTarget(data.new_daily_target)
+                    setRMR(data.new_rmr)
+                    setTDEE(data.new_tdee)
+                }
+                navigate('/dashboard')
+            } else {
+                setErrorMessage(data.error)
             }
-            navigate('/dashboard')
-    
         }
         else {
             setErrorMessage("Please Enter a Weight!")

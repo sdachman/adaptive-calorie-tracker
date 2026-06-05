@@ -37,6 +37,17 @@ class WeighIn(db.Model):
     recalc = db.Column(db.Boolean, default = False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+class FoodItem(db.Model):
+    __tablename__ = "food_items"
+    id = db.Column(db.Integer,primary_key = True)
+    name = db.column(db.String)
+    calories = db.Column(db.Integer)
+    protein = db.Column(db.Integer)
+    log_id = db.Column(db.Integer, db.ForeignKey('daily_logs.id'))
+
+
+
+
 
 
 
