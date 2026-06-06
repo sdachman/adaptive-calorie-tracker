@@ -6,13 +6,12 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     if (!localStorage.getItem("user_id")) {
         return <Navigate to = "/" />
     }
-    const [calsEaten, setCalsEaten] = useState("")
-    const [calsBurned, setCalsBurned] = useState("")
+
     const [errorMessage, setErrorMessage] = useState("")
     const navigate = useNavigate()
     const [userLogs, setUserLogs] = useState([])
     const [weighInLogs, setWeighInLogs] = useState([])
-    const [logDate, setLogDate] = useState("")
+
     
 
     async function fetchLogs(){
@@ -66,33 +65,8 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     }, [])
 
 
-    async function handleLogDay() {
-        if (calsEaten !== "" && calsBurned !=="" && logDate !== "") {
-            const response = await fetch('http://127.0.0.1:5000/api/log-day', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({"calories_eaten": Number(calsEaten), "calories_burned": Number(calsBurned), "user_id": Number(userId), "log_date": logDate})
-        })
-            const data = await response.json()
-            if (response.ok) {
-                setCalsEaten("")
-                setCalsBurned("")
-                setLogDate("")
-                fetchLogs()
-            } else {
-                setErrorMessage(data.error)
-
-            }
 
 
-        } else {
-            setErrorMessage("Please Fill All Fields!")
-        }
-    }
-    
     
 
 
@@ -141,34 +115,9 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
         <div>
             <h2>Log Your Day</h2>
         </div>
-        <div>
-            {/* cals eaten input */}
-            <label>Calories Eaten Today </label>
-            <input
-                type = "number"
-                value = {calsEaten}
-                onChange = {(event)=> setCalsEaten(event.target.value)}/>
-        </div>
-        <div>
-            {/* cals eaten input */}
-            <label>Calories Burned Today </label>
-            <input
-                type = "number"
-                value = {calsBurned}
-                onChange = {(event)=> setCalsBurned(event.target.value)}/>
-        </div>
-        <div>
-            {/* date input */}
-            <label> Log Date </label>
-            <input 
-                type = "date"
-                value = {logDate}
-                onChange = {(event)=> setLogDate(event.target.value)}/>
 
-        </div>
-
-
-        <div><button onClick={handleLogDay}>Log Day</button></div>
+        <div><button onClick={ () => navigate('/food-log')}>Log Your Day</button> </div>
+       
 
         <div> <p style ={{color:'red'}}>{errorMessage}</p> </div>
 

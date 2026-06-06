@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.algorithm import calculate_starting_calories, calculate_deficit, adjust_rmr, calculate_daily_target, calculate_activity_multiplier, get_tdee
-from app.models import User, DailyLog, WeighIn
+from app.models import User, DailyLog, WeighIn, FoodItem
 from datetime import date, datetime, timedelta
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -63,16 +63,55 @@ def signup():
     })
 
 
+# @main.route("/api/get-or-create-daily-log", methods = ["POST"])
+# @jwt_required()
+# def create_dailyLog():
+#     data = request.get_json()
+#     log_date = datetime.strptime(data["log_date"], '%Y-%m-%d').date()
+#     user_id = data[user_id]
+#     current_user_id = get_jwt_identity()
+#     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
+
+#     duplicateCheck=DailyLog.query.filter(DailyLog.user_id == user_id, 
+#                           DailyLog.date >= log_date,
+#                           DailyLog.date < log_date + timedelta(days=1)).first()
+    
+#     if (duplicateCheck is None):
+#         log = DailyLog()
+
+
+@main.route("/api/add-food", methods = ["POST"])
+@jwt_required()
+def add_food():
+    data = request.get_json()
+    user_id = data["user_id"]
+    current_user_id = get_jwt_identity()
+    if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
+    log_date = datetime.strptime(data["logDate"], '%Y-%m-%d').date()
+    calories= data["calories"]
+    protein = data["protein"]
+    name = data["name"]
+
+    if log_date > date.today():
+        return jsonify({"error": "Please select a date that is not in the future"}), 400
+    
+    new_food = FoodItem(name = name, user_id = user_id, calories = calories, protein=protein, date = log_date)
+    db.session.add(new_food)
+    db.session.commit()
+    return jsonify({"status": "ok"})
+
+
+
 @main.route("/api/log-day", methods = ["POST"])
 @jwt_required()
 def log_day():
     data = request.get_json()
-    cals_eaten = data["calories_eaten"]
-    cals_burned = data["calories_burned"]
+    cals_burned = data["cals_burned"]
     user_id = data['user_id']
     log_date = datetime.strptime(data["log_date"], '%Y-%m-%d').date()
     current_user_id = get_jwt_identity()
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
+
 
     if log_date > date.today():
         return jsonify({"error": "Please select a date that is not in the future"}), 400
@@ -83,10 +122,16 @@ def log_day():
 
     if (duplicateCheck != None):
         return jsonify({"error": "You have already logged this day. Please delete existing log first"}), 400
+ 
+    
+    food_items = FoodItem.query.filter(FoodItem.user_id == user_id,
+                                       FoodItem.date >= log_date,
+                                        FoodItem.date < log_date + timedelta(days=1)).all()
     
 
+    total_calories = sum(item.calories for item in food_items)
 
-    log = DailyLog(calories_eaten = cals_eaten,
+    log = DailyLog(calories_eaten = total_calories,
                    calories_burned = cals_burned,
                    date = log_date, user_id = user_id)
     db.session.add(log)

@@ -15,37 +15,67 @@ function FoodLog({dailyTarget}) {
     const [foodName, setFoodName] = useState("")
     const [showModal, setShowModal] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
+    const navigate = useNavigate()
 
 
 
-    function handleAddFood(){
-        const newItem = {name:foodName, cals:Number(foodCals), protein:Number(foodProtein)}
-        setFoodLogs([...foodLogs, newItem])
-        setFoodCals("")
-        setFoodProtein("")
-        setFoodName("")
-        setShowModal(false)
+    async function handleAddFood(){
+        if (foodCals!=="" && foodName!== "" && logDate!== ""){
+            const newItem = {name:foodName, cals:Number(foodCals), protein:Number(foodProtein)}
+            const user_id = localStorage.getItem("user_id")
+            const response = await fetch(`http://127.0.0.1:5000/api/add-food`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({"logDate":logDate, "user_id": Number(user_id), "name": newItem.name, "calories": Number(newItem.cals), "protein": foodProtein !== "" ? Number(foodProtein) : null })
+            }
+            )
+            const data = await response.json()
+            if (response.ok){
+                setFoodLogs([...foodLogs, newItem])
+                setFoodCals("")
+                setFoodProtein("")
+                setFoodName("")
+                setShowModal(false)
+            }else {
+                setErrorMessage(data.error)
+            }
+
+        } else {
+            setErrorMessage("Please Fill All Fields")
+        }
+        
         
     }
 
     async function handleLogDay(){
-        if(logDate!=="" && calsBurned!=="" && foodLogs.length!==0){
-            
-        
-        const response = await fetch(`http://127.0.0.1:5000/api/log-day/${localStorage.getItem("user_id")}`,{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({"foodLogs": foodLogs, "cals_buned": Number(calsBurned),"log_date": logDate})
-        }    
-        )
-        const data = await response.json()
-        
+        if (logDate!=="" && calsBurned!=="" && foodLogs.length!==0){
+            const user_id = localStorage.getItem("user_id")
+            const response = await fetch(`http://127.0.0.1:5000/api/log-day/`,{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({"user_id": user_id, "cals_burned": Number(calsBurned),"log_date": logDate})
+            }    
+            )
+            const data = await response.json()
+            if (response.ok) {
+                setCalsBurned("")
+                setLogDate("")
+                setFoodLogs([])
+                navigate('/dashboard')
+            } else {
+                setErrorMessage(data.error)
+            }
         }else {
             setErrorMessage("Please Fill All Fields")
         }
+
+
     }
 
 
@@ -96,6 +126,10 @@ function FoodLog({dailyTarget}) {
 
             <div> 
                 <button onClick={() => setShowModal(true)}>Log Food</button>
+            </div>
+
+            <div>
+                <button onClick={handleLogDay}>Log The Day</button>
             </div>
 
 

@@ -40,10 +40,11 @@ class WeighIn(db.Model):
 class FoodItem(db.Model):
     __tablename__ = "food_items"
     id = db.Column(db.Integer,primary_key = True)
-    name = db.column(db.String)
-    calories = db.Column(db.Integer)
-    protein = db.Column(db.Integer)
-    log_id = db.Column(db.Integer, db.ForeignKey('daily_logs.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
+    name = db.Column(db.String(100), nullable = False)
+    date = db.Column(db.DateTime)
+    calories = db.Column(db.Integer, nullable = False)
+    protein = db.Column(db.Integer, nullable = True)
 
 
 

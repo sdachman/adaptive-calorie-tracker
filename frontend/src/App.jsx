@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import Dashboard from './pages/Dashboard'
 import WeighIn from './pages/WeighIn'
 import Login from './pages/Login'
+import WeighIn from './pages/FoodLog'
+
 
 
 
@@ -62,6 +64,7 @@ function App() {
       <Route path ="/signup" element = {<Signup setSignupDate = {setSignupDate} getData = {getData} />} />
       <Route path ="/dashboard" element = {<Dashboard signupDate = {signupDate} handleLogout = {handleLogout} RMR = {RMR} TDEE = {TDEE} userId = {userId} dailyTarget = {dailyTarget} />} />
       <Route path ="/weigh-in" element = {<WeighIn setTDEE = {setTDEE} setRMR = {setRMR} setDailyTarget = {setDailyTarget} userId = {userId} />} />
+      <Route path = "/food-log" element = {<FoodLog dailyTarget = {dailyTarget} />} />
       
     </Routes>
 
