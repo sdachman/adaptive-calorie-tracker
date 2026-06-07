@@ -284,3 +284,29 @@ def get_weighIn(user_id): #user_id is the <user_id>
 
 
 
+
+@main.route("/api/foods/<user_id>/<date>", methods = ["GET"])
+@jwt_required()
+def get_foods(user_id, date):
+    current_user_id = get_jwt_identity()
+    if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
+
+    log_date=datetime.strptime(date, '%Y-%m-%d').date()
+
+
+    foods = FoodItem.query.filter(
+        FoodItem.user_id == user_id,
+        FoodItem.date >= log_date,
+        FoodItem.date < log_date + timedelta(days=1)
+    ).all()
+
+    food_logs = [
+        {
+            "name":food.name,
+            "calories": food.calories,
+            "protein": food.protein
+        }
+        for food in foods
+    ]
+
+    return jsonify(food_logs)

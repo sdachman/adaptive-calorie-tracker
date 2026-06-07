@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import Dashboard from './pages/Dashboard'
 import WeighIn from './pages/WeighIn'
 import Login from './pages/Login'
-import WeighIn from './pages/FoodLog'
+import FoodLog from './pages/FoodLog'
 
 
 
@@ -39,10 +39,12 @@ function App() {
   
   useEffect(()=> {
     let user_id = localStorage.getItem("user_id")
-    if (user_id != null){
+    if (user_id != null && window.location.pathname === "/"){
       getData(user_id)
       navigate('/dashboard')
-    } 
+    } else if (user_id!=null){
+      getData(user_id)
+    }
   }, [])
 
 
