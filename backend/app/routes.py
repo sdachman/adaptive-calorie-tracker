@@ -121,7 +121,7 @@ def log_day():
                           DailyLog.date < log_date + timedelta(days=1)).first()
 
     if (duplicateCheck != None):
-        return jsonify({"error": "You have already logged this day. Please delete existing log first"}), 400
+        return jsonify({"error": "already logged"}), 400
  
     
     food_items = FoodItem.query.filter(FoodItem.user_id == user_id,
@@ -304,9 +304,25 @@ def get_foods(user_id, date):
         {
             "name":food.name,
             "calories": food.calories,
-            "protein": food.protein
+            "protein": food.protein,
+            "food_id": food.id
         }
         for food in foods
     ]
 
     return jsonify(food_logs)
+
+@main.route("/api/delete-food/<int:food_id>", methods = ["DELETE"])
+@jwt_required()
+def delete_foods(food_id):
+    current_user_id = get_jwt_identity()
+    food = FoodItem.query.get(food_id)
+    if (food is None): return jsonify({"error": "food does not exist"}), 404
+    if (current_user_id != str(food.user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
+    db.session.delete(food)
+    db.session.commit()
+    return jsonify({"status": "ok"})
+
+
+
+

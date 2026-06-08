@@ -19,6 +19,25 @@ function FoodLog({dailyTarget}) {
 
 
 
+    async function handleDeleteFood(food_id){
+        setErrorMessage("")
+        const user_id = localStorage.getItem("user_id")
+        const response = await fetch(`http://127.0.0.1:5000/api/delete-food/${food_id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }
+            }
+            )
+            const data = await response.json()
+            if (response.ok){
+                fetchFoodItems(logDate)
+            } else{
+                setErrorMessage(data.error)
+            }
+    }
+
+
     async function handleAddFood(){
         setErrorMessage("")
         if (foodCals!=="" && foodName!== "" && logDate!== ""){
@@ -35,7 +54,7 @@ function FoodLog({dailyTarget}) {
             )
             const data = await response.json()
             if (response.ok){
-                setFoodLogs([...foodLogs, newItem])
+                fetchFoodItems(logDate)
                 setFoodCals("")
                 setFoodProtein("")
                 setFoodName("")
@@ -55,6 +74,9 @@ function FoodLog({dailyTarget}) {
         
         
     }
+
+
+    
 
     async function fetchFoodItems(date){
         const user_id = localStorage.getItem("user_id")
@@ -91,7 +113,11 @@ function FoodLog({dailyTarget}) {
                 setLogDate("")
                 setFoodLogs([])
                 navigate('/dashboard')
-            } else {
+            } else if (data.error==="already logged"){
+                handleDuplicateLog()
+            }
+            
+            else {
                 setErrorMessage(data.error)
             }
         } else if (foodLogs.length == 0){ setErrorMessage("Please Log a Food")}
@@ -239,6 +265,7 @@ function FoodLog({dailyTarget}) {
                             <th>Name</th>
                             <th>Calories</th>
                             <th>Protein</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -247,16 +274,17 @@ function FoodLog({dailyTarget}) {
                                 <td>{food.name}</td>
                                 <td>{food.calories}</td>
                                 <td>{food.protein ?? 0}</td>
+                                <td> <button onClick={() => handleDeleteFood(food.food_id)}>Delete</button></td>
                             </tr>
                         ))}
                     </tbody>
-                    <tfoot>
+                    {foodLogs.length > 0 && <tfoot>
                         <tr>
                             <td><b>Total</b></td>
                             <td>{foodLogs.reduce((sum, item) => sum + item.calories, 0)}</td>
                             <td>{foodLogs.reduce((sum, item) => sum + (item.protein ?? 0), 0)}</td>
                         </tr>
-                    </tfoot>
+                    </tfoot>}
 
                 </table>
 
