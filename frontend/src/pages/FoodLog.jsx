@@ -16,6 +16,7 @@ function FoodLog({dailyTarget}) {
     const [showFoodModal, setShowFoodModal] = useState(false)
     const [showDupeModal, setShowDupeModal] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
+    const [dupeLog, setDupeLog] = useState(false)
     const navigate = useNavigate()
 
 
@@ -109,6 +110,15 @@ function FoodLog({dailyTarget}) {
         } else {
             setErrorMessage(data.error)
         }
+
+        const response2 = await fetch(`http://127.0.0.1:5000/api/is-logged/${date}`,{
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }
+        }    
+        )
+        const data2 = await response2.json()
+        setDupeLog(data2)
     }
 
     async function handleLogDay(){

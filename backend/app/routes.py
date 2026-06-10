@@ -356,3 +356,13 @@ def delete_logs(date):
 
 
 
+@main.route("/api/is-logged/<date>", methods = ["GET"])
+@jwt_required()
+def is_logged(date):
+    current_user_id = get_jwt_identity()
+    log_date=datetime.strptime(date, '%Y-%m-%d').date()
+    log = DailyLog.query.filter(DailyLog.user_id == current_user_id,
+                                DailyLog.date >= log_date,
+                                DailyLog.date < log_date+timedelta(days=1),
+                                ).first()
+    return jsonify(False) if (log == None) else jsonify(True)
