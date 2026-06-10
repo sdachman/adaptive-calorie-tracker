@@ -11,6 +11,7 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     const navigate = useNavigate()
     const [userLogs, setUserLogs] = useState([])
     const [weighInLogs, setWeighInLogs] = useState([])
+    const [nextCalibration, setNextCalibration] = useState("")
 
     
 
@@ -38,7 +39,8 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
         )
         const data = await response.json()
         if (response.ok){
-            setWeighInLogs(data)
+            setWeighInLogs(data.weigh_in_logs)
+            setNextCalibration(data.next_calibration)
         } else{
             console.log("fetchWeighIn Error:", data)
         }
@@ -46,18 +48,6 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
     }
 
 
-    function untilNextWeighIn() {
-        if (weighInLogs.length <=1) {
-            const diffInMs = new Date() - new Date(signupDate)
-            const diffInDays = Math.floor(diffInMs / (1000*60*60*24))
-            return 14-diffInDays
-        } else {
-            const last_weigh_in = weighInLogs[weighInLogs.length -1]
-            const diffInMs = new Date() - new Date(last_weigh_in.date)
-            const diffInDays = Math.floor(diffInMs / (1000*60*60*24))
-            return 7-diffInDays
-        }
-    }
 
     useEffect(()=> {
         fetchLogs()
@@ -113,7 +103,7 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
 
 
         <div>
-            <h2>Log Your Day</h2>
+            <h2>Log Your Food</h2>
         </div>
 
         <div><button onClick={ () => navigate('/food-log')}>Log Your Day</button> </div>
@@ -123,7 +113,7 @@ function Dashboard({signupDate, handleLogout, RMR, TDEE, userId, dailyTarget}){
 
         <br/>
 
-        <div> <h4>Days Until Next Weigh In: {untilNextWeighIn()}</h4> </div>
+        <div> <h4>Days Until Next Calibration: {nextCalibration}</h4> </div>
         
         <div><button onClick={ () => navigate('/weigh-in')}>Log Your Weight</button></div>
 

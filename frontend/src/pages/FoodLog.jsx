@@ -13,11 +13,28 @@ function FoodLog({dailyTarget}) {
     const [foodCals, setFoodCals] = useState("")
     const [foodProtein, setFoodProtein] = useState("")
     const [foodName, setFoodName] = useState("")
-    const [showModal, setShowModal] = useState(false)
+    const [showFoodModal, setShowFoodModal] = useState(false)
+    const [showDupeModal, setShowDupeModal] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
     const navigate = useNavigate()
 
 
+    async function handleConfirmReplace(){
+        const response = await fetch(`http://127.0.0.1:5000/api/delete-log/${logDate}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            }
+        }
+        )
+        const data = await response.json()
+        if (response.ok){
+            handleLogDay()
+            setShowDupeModal(false)
+        } else {setErrorMessage(data.error)}
+    }
+
+   
 
     async function handleDeleteFood(food_id){
         setErrorMessage("")
@@ -58,7 +75,7 @@ function FoodLog({dailyTarget}) {
                 setFoodCals("")
                 setFoodProtein("")
                 setFoodName("")
-                setShowModal(false)
+                setShowFoodModal(false)
             }else {
                 setErrorMessage(data.error)
             }
@@ -114,7 +131,9 @@ function FoodLog({dailyTarget}) {
                 setFoodLogs([])
                 navigate('/dashboard')
             } else if (data.error==="already logged"){
-                handleDuplicateLog()
+                setErrorMessage("")
+                setShowDupeModal(true)
+                return
             }
             
             else {
@@ -133,7 +152,7 @@ function FoodLog({dailyTarget}) {
 
     function handleKeyDown(event){
         if (event.key == "Escape") {
-            setShowModal(false)
+            setShowFoodModal(false)
         }
     }
 
@@ -177,10 +196,10 @@ function FoodLog({dailyTarget}) {
 
             <br/>
             
-
+            {/* log food modal */}
             <div>
                 <h2> Log a Food </h2>
-                {showModal && (
+                {showFoodModal && (
                     <div style={{position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)'}}>
                         <div style={{background: 'white', margin: '100px auto', padding: '20px', width: '300px'}}>
                             <div>
@@ -210,16 +229,38 @@ function FoodLog({dailyTarget}) {
                             <button onClick={handleAddFood}>Add Food</button>
                             </div>
                             <div>
-                            <button onClick={()=> setShowModal(false)}>Exit</button>
+                            <button onClick={()=> setShowFoodModal(false)}>Exit</button>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
+            {/* log food modal */}
+ 
+
+            {/* replace log confirmation modal */}
+           <div>
+                
+                {showDupeModal && (
+                    <div style={{position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                        <div style={{background: 'white', margin: '100px auto', padding: '20px', width: '300px'}}>
+                            <h3>You have already logged this day. Would you like to replace the existing log? </h3>
+                            <div>
+                            <button onClick={()=> handleConfirmReplace()}>Yes</button>
+
+                            <button onClick={()=> setShowDupeModal(false)}>No</button>
+                            </div>
+
+
+                        </div>
+                    </div>
+                )}
+            </div>
+            {/* replace log confirmation modal */}
 
 
             <div> 
-                <button onClick={() => setShowModal(true)}>Log Food</button>
+                <button onClick={() => setShowFoodModal(true)}>Log Food</button>
             </div>
 
                 

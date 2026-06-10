@@ -211,7 +211,7 @@ def weigh_in():
 @main.route("/api/logs/<user_id>", methods = ["GET"])
 @jwt_required()
 def get_logs(user_id):
-    logs = DailyLog.query.filter(DailyLog.user_id == user_id).all()
+    logs = DailyLog.query.filter(DailyLog.user_id == user_id).order_by(DailyLog.date.asc()).all()
     current_user_id = get_jwt_identity()
     if (current_user_id != str(user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
 
@@ -271,16 +271,31 @@ def get_weighIn(user_id): #user_id is the <user_id>
     logs=WeighIn.query.filter(WeighIn.user_id == user_id).all()
     current_user_id = get_jwt_identity() # this token comes from the fetch call when we do authorization: bearer thing
     if (current_user_id != user_id): return jsonify({"error": "forbidden, you do not hav permission"}), 403
+    user = User.query.get(user_id)
 
     weigh_in_logs = [
         {
             "date": log.date.strftime("%Y-%m-%d"),
-            "weight": log.new_weight
+            "weight": log.new_weight,
         }
         for log in logs
     ]
 
-    return jsonify(weigh_in_logs)
+
+    last_weigh_in = WeighIn.query.filter(WeighIn.user_id == user_id, WeighIn.recalc == True).order_by(WeighIn.date.desc()).first()
+
+    if (last_weigh_in is None): 
+        reference_date= user.signup_date.date()
+        required_days = 14
+    else: 
+        reference_date = last_weigh_in.date.date()
+        required_days = 7
+
+    next_calibration = reference_date + timedelta(days = required_days)
+    days_until = (next_calibration - date.today()).days
+    
+
+    return jsonify({"weigh_in_logs": weigh_in_logs, "next_calibration": days_until})
 
 
 
@@ -323,6 +338,21 @@ def delete_foods(food_id):
     db.session.commit()
     return jsonify({"status": "ok"})
 
+
+@main.route("/api/delete-log/<date>", methods = ["DELETE"])
+@jwt_required()
+def delete_logs(date):
+    current_user_id = get_jwt_identity()
+    log_date=datetime.strptime(date, '%Y-%m-%d').date()
+    log = DailyLog.query.filter(DailyLog.user_id == current_user_id,
+                                DailyLog.date >= log_date,
+                                DailyLog.date < log_date+timedelta(days=1),
+                                ).first()
+    if (log is None): return jsonify({"error": "log does not exist"}), 404
+    if (current_user_id != str(log.user_id)): return jsonify({"error": "forbidden, you don't have permission"}), 403
+    db.session.delete(log)
+    db.session.commit()
+    return jsonify({"status": "ok"})
 
 
 
